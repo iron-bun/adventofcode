@@ -2,11 +2,9 @@
 
 from math import ceil
 
-def get_neighbours(state, bp, max_time):
+def get_neighbours(state, bp, max_time, max_r_cost, max_c_cost, max_o_cost):
     t, rb, cb, ob, gb, r, c, o, g = state
-    max_r_cost = max([bp[idx][0] for idx in range(4)])
-    max_c_cost = max([bp[idx][1] for idx in range(4)])
-    max_o_cost = max([bp[idx][2] for idx in range(4)])
+    
     
     if gb > 0 and t < max_time:
         yield max_time, rb, cb, ob, gb, r+rb*(max_time-t), c+cb*(max_time-t), o+ob*(max_time-t), g+gb*(max_time-t)
@@ -15,17 +13,18 @@ def get_neighbours(state, bp, max_time):
         new_time = 1 + max(ceil((bp[3][0]-r) / rb), ceil((bp[3][2]-o) / ob), 0)
         yield t+new_time, rb, cb, ob, gb+1, r+rb*new_time-bp[3][0], c+cb*new_time, o+ob*new_time-bp[3][2], g+gb*new_time
 
-    if cb > 0 and ob < max_o_cost:
+    if cb > 0 and o < max_o_cost:
         new_time = 1 + max(ceil((bp[2][0]-r) / rb), ceil((bp[2][1]-c) / cb), 0)
         yield t+new_time, rb, cb, ob+1, gb, r+rb*new_time-bp[2][0], c+cb*new_time-bp[2][1], o+ob*new_time, g+gb*new_time
 
-    if cb < max_c_cost:
+    if cb < max_c_cost and c < max_c_cost:
         new_time = 1 + max(ceil((bp[1][0]-r) / rb), 0)
         yield t+new_time, rb, cb+1, ob, gb, r+rb*new_time-bp[1][0], c+cb*new_time, o+ob*new_time, g+gb*new_time
 
-    if rb < max_r_cost:
+    if rb < max_r_cost and r < max_r_cost:
         new_time = 1 + max(ceil((bp[0][0]-r) / rb), 0)
         yield t+new_time, rb+1, cb, ob, gb, r+rb*new_time-bp[0][0], c+cb*new_time, o+ob*new_time, g+gb*new_time
+
 
 def parse(line):
     bp = line.split(" ")
@@ -39,38 +38,37 @@ def parse(line):
 
 def solution(line, max_time):
 
-        bp = parse(line)
+    bp = parse(line)
 
-        for v in bp:
-            print(v)
-        state = (0,1,0,0,0,0,0,0,0)
+    max_r_cost = max([bp[idx][0] for idx in range(4)])
+    max_c_cost = max([bp[idx][1] for idx in range(4)])
+    max_o_cost = max([bp[idx][2] for idx in range(4)])
 
-        queue = [state]
-        resolved = set()
+    state = (0,1,0,0,0,0,0,0,0)
 
-        tmp = 0
-        while len(queue) > 0:
-            state = queue.pop(0)
+    queue = [state]
 
-            if state in resolved:
-                continue
-            resolved.add(state)
-                
-            if state[-1] > tmp:
-                tmp = state[-1]
+    resolved = set()
 
-            for n in get_neighbours(state, bp, max_time):
-                if n[0] <= max_time:
-                    queue.append(n)
+    tmp = 0
+    while len(queue) > 0:
+        state = queue.pop()
 
-        print("***", tmp)
-        return tmp
+        resolved.add(state)
+            
+        if state[-1] > tmp:
+            tmp = state[-1]
+
+        for n in get_neighbours(state, bp, max_time, max_r_cost, max_c_cost, max_o_cost):
+            if n[0] <= max_time and n not in resolved:
+                queue.append(n)
+
+    return tmp
 
 def solution1(f):
     ans = 0
     for idx, line in enumerate(f):
         idx += 1
-        print(idx)
         ans += idx * solution(line, 24)
     return ans
     
@@ -78,8 +76,7 @@ def solution2(f):
     ans = 1
     for idx, line in enumerate(f):
         idx += 1
-        print(idx)
-        if idx == 3:
+        if idx == 4:
             break
         ans *= solution(line, 32)
     return ans
@@ -89,4 +86,4 @@ if __name__ == "__main__":
         print(solution1(f))
     with open("day19.txt") as f:
         print(solution2(f))
-        
+
