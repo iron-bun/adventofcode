@@ -61,7 +61,6 @@ def solution1(data):
                 y+=1
                 
             else:
-                #print("rested")
                 caves[(x, y)] = "o"
                 ans += 1
                 grain = (500,0)
@@ -77,40 +76,39 @@ def solution2(data):
     sand_falling = True
     ans = 0
     
+    falling_chain = [(500, 0)]
     
     while sand_falling:
-    
-        grain = (500,0)
-        
-        while grain not in caves and grain[1] < max_depth+10:
+
+        x, y = falling_chain.pop()
+
+        while (x, y) not in caves and y < max_depth+10:
             
-            x, y = grain
             if y+1 == max_depth:
                 caves[(x, y)] = "o"
-                grain = (500, 0)
                 ans += 1
+
             elif (x, y+1) not in caves:
+                falling_chain.append((x, y))
                 y += 1
                 
             elif (x-1, y+1) not in caves:
+                falling_chain.append((x, y))
                 x -= 1
                 y += 1
             
             elif (x+1, y+1) not in caves:
+                falling_chain.append((x, y))
                 x+=1
                 y+=1
                 
             else:
-                ans += 1
                 caves[(x, y)] = "o"
+                ans += 1
                 
                 if (x, y) == (500, 0):
                     sand_falling = False
                     break
-                
-                grain = (500,0)
-                
-            grain = x, y
             
     return ans
     
