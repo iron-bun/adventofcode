@@ -48,12 +48,57 @@ def merge_rock(board, rock, rock_pos, rock_alt, rock_height):
             board.append(line)
     return board
 
-def print_board(board):
-    for line in board:
-        print(line)
+def fill_down(board):
+    tmp = "       "
+    for idx in range(len(board)-1, -1, -1):
+        tmp2 = []
+        for i, j in zip(board[idx], tmp):
+            if i == "#" or j == "#":
+                tmp2.append("#")
+            else:
+                tmp2.append(" ")
+        tmp = "".join(tmp2)
+        if tmp == "#######":
+            board[idx] = tmp
+    return board
 
-def solution(data):
+def compact_board(board):
     ans = 0
+    for line in board:
+        if line == "#######":
+            ans += 1
+        else:
+            break
+    return ans, board[ans:]
+
+def solution(data, iterations):
+
+
+    rock_count = 1754
+    tmp = 2779
+    rock_idx = 4
+    wind_index = 5
+    ans = 15
+    if rock_count + 1750 < iterations:
+        tmp2 = (iterations - rock_count) // 1750
+        tmp += 2781 * tmp2
+        rock_count += tmp2 * 1750
+
+    board = [" ##### ",
+"#####  ",
+"##  #  ",
+"## ##  ",
+"#####  ",
+"## #   ",
+"  ###  ",
+" ## #  ",
+" ## #  ",
+" ####  ",
+"    #  ",
+"   ### ",
+" ####  ",
+"   #   ",
+"   #   "]
 
     rocks = (("####", 4, 1), 
              (" # \n###\n # ", 3, 3), 
@@ -61,14 +106,11 @@ def solution(data):
              ("#\n#\n#\n#", 1, 4), 
              ("##\n##", 2, 2))
 
-    rock_idx = 0
-    rock_count = 0
 
-    wind_index = 0
 
-    board = []
 
-    while rock_count < 2022:
+    while rock_count < iterations:
+        prev_wind_index = wind_index
         new_rock, width, height = rocks[rock_idx]
         new_rock_alt = ans + 3
         new_rock_pos = 2
@@ -82,14 +124,11 @@ def solution(data):
             wind_index += 1
             wind_index %= len(data)
 
-            #print(wind, new_rock_alt, new_rock_pos)
 
             if wind == ">" and can_move_sideways(board, new_rock, new_rock_pos, new_rock_alt, width, 1):
                 new_rock_pos += 1
-                #print("right")
             elif wind == "<" and can_move_sideways(board, new_rock, new_rock_pos, new_rock_alt, width, -1):
                 new_rock_pos -= 1
-                #print("left")
 
             #fall
             if can_move_down(board, new_rock, new_rock_pos, new_rock_alt, width, height):
@@ -99,11 +138,15 @@ def solution(data):
                 if ans < new_rock_alt + height:
                     ans = new_rock_alt + height
                 board = merge_rock(board, new_rock, new_rock_pos, new_rock_alt, height)
-        #print_board(board)
-        #exit()
-    return ans
+
+        board = fill_down(board)
+        tmp2, board = compact_board(board)
+        tmp += tmp2
+        ans -= tmp2
+    return ans + tmp
 
 if __name__ == '__main__':
     with open("day17.txt") as f:
         data = f.readline().strip()
-    print(solution(data))
+    print(solution(data, 2022))
+    print(solution(data, 1000000000000))
