@@ -8,7 +8,7 @@ def puzzle(prefix):
     suffix = 1
     while True:
         guess = hashlib.md5((key+str(suffix)).encode()).hexdigest()
-        if guess[:5] == prefix:
+        if guess[:len(prefix)] == prefix:
             break
         suffix += 1
     return suffix
