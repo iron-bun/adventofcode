@@ -81,7 +81,6 @@ count = 0
 path_marks = {"S":"S","|":"│", "L":"└", "7":"┐", "F":"┌", "J":"┘", "-":"─"}
 for i, line in enumerate(data):
   inside=False
-  last_cross = ""
   for j, char in enumerate(line):
     if (j, i) in path:
       data[i][j] = path_marks[char]
@@ -89,32 +88,14 @@ for i, line in enumerate(data):
       if char == "S":
         char = s_type
 
-      if char == "|":
+      if char in "|LJ":
         inside = not inside
-        last_cross = ""
-
-      elif last_cross == "" and char in "FL":
-        inside = not inside
-        last_cross = char
-      elif last_cross == "F" and char == "J":
-        last_cross = ""
-
-      elif last_cross == "F" and char in "7":
-        inside = not inside
-        last_cross = ""
-
-      elif last_cross == "L" and char == "7":
-        last_cross = ""
-
-      elif last_cross == "L" and char == "J":
-        inside = not inside
-        last_cross = ""
 
     elif inside:
       count += 1
       data[i][j] = "*"
     elif char!=".":
-      data[i][j] = "X"
+      data[i][j] = "."
 
 for line in data:
   print("".join(line).strip("\n"))
