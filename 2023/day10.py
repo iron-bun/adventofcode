@@ -38,18 +38,12 @@ directions={"N":((0,-1), {"7":"W", "|":"N", "F":"E"}),
             "W":((-1, 0),{"L":"N", "-":"W", "F":"S"}),
             "S":((0,1),  {"|":"S", "J":"W", "L":"E"})}
 
-s_types = {"N":{"N":"|", "E":"J", "W":"L"},
-           "E":{"N":"F", "E":"-", "S":"L"},
-           "W":{"N":"7", "S":"J", "W":"-"},
-           "S":{"S":"|", "E":"7", "W":"F"}}
-
 def search(start, data):
   x, y = start
   count = 0
 
   for direction in directions.keys():
     path = [start]
-    first_direction = direction
 
     while True:
       offset, options = directions[direction]
@@ -59,7 +53,7 @@ def search(start, data):
         next_square = "."
 
       if next_square == "S":
-        return count, path, s_types[first_direction][direction]
+        return count, path
 
       elif next_square in options.keys():
         x, y = x+offset[0], y+offset[1]
@@ -74,29 +68,15 @@ with open("day10.txt") as file:
   data = file.readlines()
   data = [list(l) for l in data]
 
-count, path, s_type = search(find_start(data), data)
-print(int((count+1)/2))
+circumference, path = search(find_start(data), data)
+ans = int((circumference+1)/2)
+print(ans)
 
-count = 0
-path_marks = {"S":"S","|":"│", "L":"└", "7":"┐", "F":"┌", "J":"┘", "-":"─"}
-for i, line in enumerate(data):
-  inside=False
-  for j, char in enumerate(line):
-    if (j, i) in path:
-      data[i][j] = path_marks[char]
+#shoelace formula for the area of a polygon from its vertices
+area = 0.5*sum([path[n][0]*(path[(n+1)%len(path)][1]-path[n-1][1]) for n in range(len(path))])
+area = abs(area)
 
-      if char == "S":
-        char = s_type
-
-      if char in "|LJ":
-        inside = not inside
-
-    elif inside:
-      count += 1
-      data[i][j] = "*"
-    elif char!=".":
-      data[i][j] = "."
-
-for line in data:
-  print("".join(line).strip("\n"))
-print(count)
+#Correct for the circumference taking up space
+area -= ans
+area += 1
+print(int(area))
