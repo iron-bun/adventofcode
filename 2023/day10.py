@@ -38,12 +38,19 @@ directions={"N":((0,-1), {"7":"W", "|":"N", "F":"E"}),
             "W":((-1, 0),{"L":"N", "-":"W", "F":"S"}),
             "S":((0,1),  {"|":"S", "J":"W", "L":"E"})}
 
+s_types = {"N":{"N":"|", "E":"J", "W":"L"},
+           "E":{"N":"F", "E":"-", "S":"L"},
+           "W":{"N":"7", "S":"J", "W":"-"},
+           "S":{"S":"|", "E":"7", "W":"F"}}
+
 def search(start, data):
   x, y = start
   count = 0
 
   for direction in directions.keys():
     path = [start]
+    first_direction = direction
+
     while True:
       offset, options = directions[direction]
       try:
@@ -52,12 +59,14 @@ def search(start, data):
         next_square = "."
 
       if next_square == "S":
-        return count, path
+        return count, path, s_types[first_direction][direction]
+
       elif next_square in options.keys():
         x, y = x+offset[0], y+offset[1]
         path.append((x, y))
         direction = options[next_square]
         count += 1
+
       else:
         break
 
@@ -65,7 +74,7 @@ with open("day10.txt") as file:
   data = file.readlines()
   data = [list(l) for l in data]
 
-count, path = search(find_start(data), data)
+count, path, s_type = search(find_start(data), data)
 print(int((count+1)/2))
 
 count = 0
@@ -77,8 +86,8 @@ for i, line in enumerate(data):
     if (j, i) in path:
       data[i][j] = path_marks[char]
 
-      if char == "S": #shameful hard coding because this is what S represents in my data
-        char = "7"
+      if char == "S":
+        char = s_type
 
       if char == "|":
         inside = not inside
