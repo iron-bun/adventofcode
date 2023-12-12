@@ -14,58 +14,44 @@ unknown_test_data = ["???.### 1,1,3",
 "????.######..#####. 1,6,5",
 "?###???????? 3,2,1"]
 
-def debug_print(*args):
-  return
-  print(*args)
-
+memo = {}
 def fit_record(record, counts):
-  debug_print("//", record, counts)
+  if (record, counts) in memo:
+    return memo[record, counts]
 
-  if len(counts) == 0:
-    return
+  if len(counts) > 0:
+    pass
+  elif "#" in record:
+    return 0
+  else:
+    return 1
 
-  min_length = sum(counts) + len(counts) - 1
-  if min_length > len(record):
-    #print("candidates don't fit in remaining space")
-    return
-
-  if record[0] == ".":
-    for tmp in fit_record(record[1:], counts):
-      yield "." + tmp
-    return
-
-  if min_length == len(record):
-    test_record = ".".join("#"*v for v in counts)
-    for i, j in zip(record, test_record):
-      if i == "." and j == "#" or i == "#" and j == ".":
-        break
-    else:
-      debug_print("Solution from only fit")
-      yield ".".join("#"*v for v in counts)
-    #print("only solution doesn't fit")
-    return 
+  if len(record) < sum(counts) + len(counts) - 1:
+    return 0
 
   ans = 0
-  for idx in range(len(record)):
-    if idx+counts[0] > len(record):
-      break
+  count = counts[0]
+
+  idx = 0
+  while idx < len(record)+1-count:
     if "#" in record[:idx]:
       break
-    if "." in record[idx:idx+counts[0]]:
-      #print(f"Can't fit {counts[0]} into index {idx} ({record[idx:idx+counts[0]]} {counts[1:]})")
+
+    if "." in record[idx:idx+count]:
+      idx += 1
       continue
-    if idx+counts[0] < len(record) and record[idx+counts[0]] == "#":
-      #print(f"Can't fit {counts[0]} into index {idx} because trailing #")
+
+    if len(record) > idx+count and record[idx+count] == "#":
+      idx += 1
       continue
-    #print(f"{counts[0]} fits at index {idx} of {record}")
-    if len(counts) > 1:
-      for tmp in fit_record(record[idx+counts[0]+1:], counts[1:]):
-        yield "."*idx + "#"*counts[0] + "." + tmp
-    elif len(counts) == 1 and "#" in record[idx+counts[0]:]:
-      pass
-      #print("unallocated #")
-    elif len(counts) == 1:
-      yield "."*idx + "#"*counts[0] + "."*(len(record)-idx-counts[0])
+
+    tmp = fit_record(record[idx+count+1:], counts[1:])
+    memo[(record[idx+count+1:], counts[1:])] = tmp
+
+    ans += tmp
+    idx += 1
+
+  return ans
 
 total = 0
 with open("day12.txt") as data:
@@ -73,14 +59,24 @@ with open("day12.txt") as data:
     line = line.strip()
 
     record, counts = line.split()
-    counts = list(map(int, counts.split(",")))
+    counts = tuple(map(int, counts.split(",")))
 
-    tmp_count = 0
-    print(record, counts)
-    for tmp in fit_record(record, counts):
-      print(tmp)
-      tmp_count += 1
-    print("result count", tmp_count)
+    tmp_count = fit_record(record, counts)
+    total += tmp_count
+print(total)
+
+total = 0
+with open("day12.txt") as data:
+  for line in data:
+    line = line.strip()
+
+    record, counts = line.split()
+    counts = tuple(map(int, counts.split(",")))
+
+    record = "?".join([record]*5)
+    counts = counts*5
+
+    tmp_count = fit_record(record, counts)
     total += tmp_count
 print(total)
 
