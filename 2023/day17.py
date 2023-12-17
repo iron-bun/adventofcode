@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from queue import PriorityQueue
+from libs.dijkstra import dijkstra
 
 test_data = ["2413432311323",
 "3215453535623",
@@ -19,29 +19,12 @@ test_data = ["2413432311323",
 def get_cost(x, y, data):
   return int(data[y][x])
 
-def find_min_cost_route(start, end, data, min_step=1, max_step=3):
+def get_map_maker(min_step, max_step):
+  min_step = min_step
+  max_step = max_step
 
-  queue = PriorityQueue()
-  resolved = set()
-
-  queue_item = (0, ((0,0), "."))
-  queue.put(queue_item)
-
-  while queue.qsize() > 0:
-
-    cost, location = queue.get()
-    location, steps = location
-    x, y = location
-    prev_step = steps[-1]
-
-    while queue.qsize() > 0 and (x, y, prev_step) in resolved:
-      cost, location = queue.get()
-      location, steps = location
-      prev_step = steps[-1]
-      x, y = location
-
-    if (x, y) == end:
-      return cost
+  def get_neighbours(tile):
+    x, y, prev_step = tile
 
     if prev_step != ">":
       sum_cost = 0
@@ -50,9 +33,7 @@ def find_min_cost_route(start, end, data, min_step=1, max_step=3):
           break
         sum_cost += get_cost(x-i, y, data)
         if i >= min_step:
-          next_cost = cost + sum_cost
-          queue_item = (next_cost, ((x-i,y), ">"))
-          queue.put(queue_item)
+          yield (sum_cost, (x-i,y, ">"))
 
       sum_cost = 0
       for i in range(1, max_step+1):
@@ -60,9 +41,7 @@ def find_min_cost_route(start, end, data, min_step=1, max_step=3):
           break
         sum_cost += get_cost(x+i, y, data)
         if i >= min_step:
-          next_cost = cost + sum_cost
-          queue_item = (next_cost, ((x+i, y), ">"))
-          queue.put(queue_item)
+          yield (sum_cost, (x+i, y, ">"))
 
     if prev_step != "V":
       sum_cost = 0
@@ -71,9 +50,7 @@ def find_min_cost_route(start, end, data, min_step=1, max_step=3):
           break
         sum_cost += get_cost(x, y-i, data)
         if i >= min_step:
-          next_cost = cost + sum_cost
-          queue_item = (next_cost, ((x, y-i), "V"))
-          queue.put(queue_item)
+          yield (sum_cost, (x, y-i, "V"))
 
       sum_cost = 0
       for i in range(1, max_step+1):
@@ -81,20 +58,22 @@ def find_min_cost_route(start, end, data, min_step=1, max_step=3):
           break
         sum_cost += get_cost(x, y+i, data)
         if i >= min_step:
-          next_cost = cost + sum_cost
-          queue_item = (next_cost, ((x, y+i), "V"))
-          queue.put(queue_item)
+          yield (sum_cost, (x, y+i, "V"))
 
-    resolved.add((x, y, prev_step))
+  def end_found(node):
+    return node[:2] == (len(data[0])-1, len(data)-1)
 
+  return get_neighbours, end_found
 
 with open("day17.txt") as f:
   data = f.readlines()
   data = list(map(str.strip, data))
 
-cost = find_min_cost_route((0,0), (len(data[0])-1, len(data)-1), data)
+map_maker, end_found = get_map_maker(1, 3)
+cost = dijkstra((0,0,"."), map_maker, end_found)
 print(cost)
 
-cost = find_min_cost_route((0,0), (len(data[0])-1, len(data)-1), data, 4, 10)
-print(cost)
 
+map_maker, end_found = get_map_maker(4, 10)
+cost = dijkstra((0,0,"."), map_maker, end_found)
+print(cost)
