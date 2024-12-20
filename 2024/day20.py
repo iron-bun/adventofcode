@@ -39,19 +39,29 @@ while not queue.empty():
 
 skips_1, skips_2 = {}, {}
 for k1 in costs:
-    for k2 in costs:
-        if costs[k1] >= costs[k2]:
+    for i in range(-20, 21):
+        if k1[0] + i < 0 or k1[0] + i > x:
             continue
+        for j in range(-20-i, 21-i):
+            if k1[1] + j < 0 or k1[1]+j > y:
+                continue
+            
+            if i == 0 and j == 0:
+                continue
+
+            k2 = (k1[0]+i, k1[1]+j)
+            if costs.get(k2) == None or costs[k1] >= costs[k2]:
+                continue
         
-        dist = abs(k1[0] - k2[0]) + abs(k1[1] - k2[1])
-        saving = costs[k2] - costs[k1] - dist
+            dist = abs(k1[0] - k2[0]) + abs(k1[1] - k2[1])
+            saving = costs[k2] - costs[k1] - dist
         
-        if saving <= 0:
-            continue
-        if dist <= 20:
-            skips_2[saving] = skips_2.get(saving, 0) + 1
-        if dist <= 2:
-            skips_1[saving] = skips_1.get(saving, 0) + 1
+            if saving <= 0:
+                continue
+            if dist <= 20:
+                skips_2[saving] = skips_2.get(saving, 0) + 1
+            if dist <= 2:
+                skips_1[saving] = skips_1.get(saving, 0) + 1
 
 ans = 0
 for k in sorted(skips_1.keys()):
