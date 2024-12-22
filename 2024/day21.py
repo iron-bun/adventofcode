@@ -48,38 +48,44 @@ def route(start, end, layout, i_layout):
                 tmp_space = tuple(map(sum, zip(space, d)))
                 if layout.get(tmp_space) != None:
                     queue.put((cost+1, tmp_space, path+[d[2]]))
-                    
-def expand(path, layout, i_layout):
-    options = []
+
+cache = {}
+def expand(path, depth, layout, i_layout):
+
+    length = 0
     p1 = "A"
     for c1 in path:
-        tmp_options = []
-        for c2 in route(p1, c1, layout, i_layout):
-            if len(options) == 0:
-                tmp_options = ["".join(c2)]
-            else:
-                for o in options:
-                    tmp_options.append(o + "".join(c2))
-        options = tmp_options
-        p1 = c1
-    return options
+        if (p1, c1, depth-1) in cache:
+            length += cache[p1, c1, depth-1]
+        else:
+            min_length = None
+            for c2 in route(p1, c1, layout, i_layout):
+                if depth == 0:
+                    if min_length == None or len(c2) < min_length:
+                        min_length = len(c2)
+                else:
+                    ml = expand(c2, depth-1, layout_arrows, i_layout_arrows)
+                    if min_length == None or ml < min_length:
+                        min_length = ml
 
-ans = 0
+            cache[p1, c1, depth-1] = min_length
+            length += min_length
+            
+        p1 = c1
+        
+    return length
+
+ans_1 = 0
+ans_2 = 0
 with open("day21.txt") as f:
     for line in f:
         length = 99
         line = line.strip()
-#        print("*", line)
-        for a in expand(line, layout_1_9, i_layout_1_9):
-#            print("**", a)
-            for b in expand(a, layout_arrows, i_layout_arrows):
-#                print("***", b)
-                for c in expand(b, layout_arrows, i_layout_arrows):
-#                    print("****", c)
-                    if len(c) < length:
-                        length = len(c)
-        
-        ans += length * int("".join(re.findall("(\d)", line)))
-print(ans)
+        length_1 = expand(line, 2, layout_1_9, i_layout_1_9)
+        length_2 = expand(line, 25, layout_1_9, i_layout_1_9)
 
-
+        k = int("".join(re.findall("(\d)", line)))
+        ans_1 += length_1 * k
+        ans_2 += length_2 *k
+print(ans_1)
+print(ans_2)
