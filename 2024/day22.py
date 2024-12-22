@@ -19,9 +19,9 @@ with open("day22.txt") as f:
         prev = line%10
         line_history = []
         for _ in range(2000):
-            line = randomise(line)            
+            line = randomise(line)
             tmp = line%10
-            
+
             history.append(tmp-prev)
             tmp_history = tuple(history)
             
