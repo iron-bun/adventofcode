@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
 
-def run(program):
-    idx = 0
-    while True:
-        if program[idx] == 99:
-            break
-        elif program[idx] == 1:
-            v1 = program[program[idx+1]]
-            v2 = program[program[idx+2]]
-            program[program[idx+3]] = v1 + v2
-        elif program[idx] == 2:
-            v1 = program[program[idx+1]]
-            v2 = program[program[idx+2]]
-            program[program[idx+3]] = v1 * v2
-        else:
-            print(f"unknown instruction {program[idx]} at {idx}")
-            exit()
-        idx += 4
-    return program
+from intcode import run
 
 with open("day02.txt") as f:
     line = f.readline().strip().split(",")
