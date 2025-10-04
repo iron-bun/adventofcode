@@ -3,19 +3,27 @@ class Intcode:
     def __init__(self, stdin, stdout, prog):
         self.stdin = stdin
         self.stdout = stdout
-        self.prog = prog
+        self.prog = {k:v for k,v in enumerate(prog)}
         self.idx = 0
-        self.commands = {1: (self.add, 3), 2:(self.mult, 3), 3:(self.read,1), 4:(self.write,1), 5:(self.jit, 2), 6:(self.jif, 2), 7:(self.lt, 3), 8:(self.eq,3)}
+        self.commands = {1: (self.add, 3), 2:(self.mult, 3), 3:(self.read,1), 4:(self.write,1), 5:(self.jit, 2), 6:(self.jif, 2), 7:(self.lt, 3), 8:(self.eq,3), 9:(self.rebase,1)}
+        self.base = 0
 
     def peek(self, idx, mode):
-        if mode == "1":
-            return self.prog[idx]
+        if mode == "0":
+            idx = self.prog[idx]
+        elif mode == "2":
+            idx = self.prog[idx]+self.base
+
+        if idx not in self.prog:
+            return 0
         else:
-            return self.prog[self.prog[idx]]
+            return self.prog[idx]
 
     def poke(self, idx, mode, value):
         if mode == "1":
-            self.prog[self.idx] = value
+            self.prog[idx] = value
+        elif mode == "2":
+            self.prog[self.prog[idx]+self.base] = value
         else:
             self.prog[self.prog[idx]] = value
 
@@ -71,6 +79,9 @@ class Intcode:
             self.poke(self.idx+3, modes[0], 0)
         self.idx+=4
 
+    def rebase(self, modes):
+        self.base += self.peek(self.idx+1, modes[0])
+        self.idx += 2
 
     def run(self):
         while True:
